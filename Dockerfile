@@ -30,7 +30,7 @@ RUN apt-get update && \
   libresource-retriever-dev \
   libsdl2-dev \
   libtinyxml2-dev \
-  libxaw7-dev 
+  libxaw7-dev \
   libxcursor-dev \
   libxrandr-dev \
 	lsb-release \
@@ -83,22 +83,42 @@ RUN apt update && \
     apt install -y \
     libatlas-base-dev \
     libbluetooth-dev \
+    libboost-dev \
+    libboost-program-options-dev \
     libboost-python-dev \
+    ninja-build \
     libcurlpp-dev \
     libcwiid1 \
     libcwiid-dev \
+    libdrm-dev \
     libspnav-dev \
-    libusb-1.0-0-dev
+    libusb-1.0-0-dev \
     libyaml-cpp-dev \
     ntpdate \
     python3-netifaces \
-    python3-psutil \
-    
+    python3-psutil
+
+RUN pip install \
+    meson \
+    jinja2 \
+    ply \
+    pyyaml
+
+# Install libcamera (source build)
+RUN git clone https://git.libcamera.org/libcamera/libcamera.git && \
+    cd libcamera && \
+    meson build && \
+    ninja -C build install && \
+    cd .. && \
+    rm -rf libcamera
+
+
 # Downloading ros-humble and unzip
 RUN wget https://github.com/Ar-Ray-code/rpi-bullseye-ros2/releases/download/ros2-0.2.0/humble-aarch64.zip && \
 	mkdir -p /opt/ros && \
 	unzip humble-aarch64.zip -d /opt/ros && \
 	rm humble-aarch64.zip
 
+RUN ldconfig
 RUN mkdir -p /ros2_ws/src
 WORKDIR /ros2_ws
