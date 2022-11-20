@@ -9,4 +9,4 @@ echo "create alias done"
 echo ""
 
 echo "To use this alias, please enter the following command in the terminal:"
-echo "xcompile_rpi_ros2 [ROS2_WS] [OPERATE_BASH (optional)]"
+echo "xcompile_rpi_ros2 [TARGET ROS2 WORKSPACE] [Bash_SCRIPT(optional)]"

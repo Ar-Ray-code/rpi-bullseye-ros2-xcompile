@@ -26,7 +26,7 @@ RUN apt-get update && \
   libeigen3-dev \
   libfreetype-dev \
   liblog4cxx-dev \
-  libopencv-dev \	
+  libopencv-dev \
   libresource-retriever-dev \
   libsdl2-dev \
   libtinyxml2-dev \
@@ -76,7 +76,7 @@ RUN pip install \
 	pytest \
 	setuptools \
   vcstool
-  
+
 
 # additional packages
 RUN apt update && \
