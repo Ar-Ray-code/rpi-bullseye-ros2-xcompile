@@ -1,5 +1,10 @@
 FROM arm64v8/debian:bullseye
 
+ARG DISTRO=humble
+ARG VERSION=0.3.0
+ARG DATE=20221215
+ARG ARCH=arm64
+
 ENV TZ=Asia/Tokyo
 RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
 ENV DEBIAN_FRONTEND=noninteractive
@@ -98,26 +103,32 @@ RUN apt update && \
     python3-netifaces \
     python3-psutil
 
-RUN pip install \
-    meson \
-    jinja2 \
-    ply \
-    pyyaml
+# RUN pip install \
+#     meson \
+#     jinja2 \
+#     ply \
+#     pyyaml
 
-# Install libcamera (source build)
-RUN git clone https://git.libcamera.org/libcamera/libcamera.git && \
-    cd libcamera && \
-    meson build && \
-    ninja -C build install && \
-    cd .. && \
-    rm -rf libcamera
+# # Install libcamera (source build)
+# RUN git clone https://git.libcamera.org/libcamera/libcamera.git && \
+#     cd libcamera && \
+#     meson build && \
+#     ninja -C build install && \
+#     cd .. && \
+#     rm -rf libcamera
 
 
 # Downloading ros-humble and unzip
-RUN wget https://github.com/Ar-Ray-code/rpi-bullseye-ros2/releases/download/ros2-0.2.0/humble-aarch64.zip && \
-	mkdir -p /opt/ros && \
-	unzip humble-aarch64.zip -d /opt/ros && \
-	rm humble-aarch64.zip
+
+WORKDIR /ros2_ws
+RUN wget https://github.com/Ar-Ray-code/rpi-bullseye-ros2/releases/download/ros2-${VERSION}/ros-${DISTRO}-desktop-${VERSION}_${DATE}_${ARCH}.deb && \
+    apt install /ros2_ws/ros-${DISTRO}-desktop-${VERSION}_${DATE}_${ARCH}.deb -y && \
+    rm -rf /ros2_ws/ros-${DISTRO}-desktop-${VERSION}_${DATE}_${ARCH}.deb
+
+# install additional packages
+RUN apt update && \
+  apt install -y \
+  libpcl-dev
 
 RUN ldconfig
 RUN mkdir -p /ros2_ws/src

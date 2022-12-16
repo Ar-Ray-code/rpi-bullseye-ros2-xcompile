@@ -5,6 +5,8 @@ OPERATE_BASH=$2
 ROS2_WS=`realpath ${ROS2_WS}`/
 DOCKER_NAME="rpi4-ros2"
 
+DEB_ROOT=${ROS2_WS}/deb/
+
 SCRIPT_DIR=$(
     cd $(dirname $0)
     pwd
@@ -80,6 +82,9 @@ docker build -t ${DOCKER_NAME} ${SCRIPT_DIR}/.
 
 BASH_SCRIPT_CONTENT=$(cat ${OPERATE_BASH})
 docker run -it --rm --init --privileged --network=host -v ${ROS2_WS}:/ros2_ws ${DOCKER_NAME} /bin/bash -c "${BASH_SCRIPT_CONTENT}"
+
+# create deb package
+
 
 if [ $? -ne 0 ]; then
     echo "docker run failed"
