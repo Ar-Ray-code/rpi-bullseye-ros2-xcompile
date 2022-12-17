@@ -121,9 +121,11 @@ RUN apt update && \
 # Downloading ros-humble and unzip
 
 WORKDIR /ros2_ws
-RUN wget https://github.com/Ar-Ray-code/rpi-bullseye-ros2/releases/download/ros2-${VERSION}/ros-${DISTRO}-desktop-${VERSION}_${DATE}_${ARCH}.deb && \
-    apt install /ros2_ws/ros-${DISTRO}-desktop-${VERSION}_${DATE}_${ARCH}.deb -y && \
-    rm -rf /ros2_ws/ros-${DISTRO}-desktop-${VERSION}_${DATE}_${ARCH}.deb
+RUN wget -qO - https://s3.ap-northeast-1.wasabisys.com/rpi-raspbian-ros2/default.gpg | apt-key add - && \
+    echo "deb https://s3.ap-northeast-1.wasabisys.com/rpi-raspbian-ros2 bullseye humble" | tee /etc/apt/sources.list.d/ros2-bullseye.list && \
+    apt update && \
+    apt install ros-humble-desktop
+    
 
 # install additional packages
 RUN apt update && \
