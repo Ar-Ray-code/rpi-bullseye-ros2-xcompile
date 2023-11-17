@@ -2,7 +2,17 @@
 ROS2_WS=$1
 OPERATE_BASH=$2
 
+check_and_exit() {
+    if [ $? -ne 0 ]; then
+        echo "failed"
+        exit 1
+    fi
+}
+
+
 ROS2_WS=`realpath ${ROS2_WS}`/
+check_and_exit
+
 DOCKER_NAME="rpi4-ros2"
 
 DEB_ROOT=${ROS2_WS}/deb/
@@ -23,7 +33,9 @@ if [ -z ${ROS2_WS} ]; then
     exit 1
 fi
 
-sudo echo "permission check... OK!"
+sudo echo "permission check..."
+check_and_exit
+echo "OK!"
 
 
 cd $SCRIPT_DIR
@@ -79,9 +91,11 @@ fi
 
 # build docker and run
 docker build -t ${DOCKER_NAME} ${SCRIPT_DIR}/.
+check_and_exit
 
 BASH_SCRIPT_CONTENT=$(cat ${OPERATE_BASH})
 docker run -it --rm --init --privileged --network=host -v ${ROS2_WS}:/ros2_ws ${DOCKER_NAME} /bin/bash -c "${BASH_SCRIPT_CONTENT}"
+check_and_exit
 
 # create deb package
 

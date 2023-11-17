@@ -1,7 +1,8 @@
-FROM arm64v8/debian:bullseye
+ARG DEBIAN_DISTRO=bookworm
+FROM arm64v8/debian:${DEBIAN_DISTRO}
 
-ARG DISTRO=humble
-ARG VERSION=0.3.0
+ARG DISTRO=iron
+ARG URL="https://s3.ap-northeast-1.wasabisys.com/download-raw/dpkg/ros2-desktop/debian/bookworm/ros-iron-desktop-0.3.2_20231028_arm64.deb"
 ARG DATE=20221215
 ARG ARCH=arm64
 
@@ -17,52 +18,77 @@ ENV LANG=en_US.UTF-8
 
 # Install ros2 dependencies
 RUN apt-get update && \
-	apt-get install -y \
-	bison \
+  apt-get install -y \
+  bison \
   build-essential \
-  curl \
   cmake \
+  curl \
   doxygen \
   git \
   gnupg \
-	libacl1-dev \
+  lsb-release \
+  libacl1-dev \
   libasio-dev \
+  libatlas-base-dev \
+  libbluetooth-dev \
+  libboost-dev \
+  libboost-program-options-dev \
+  libboost-python-dev \
   libbullet-dev \
+  libcurlpp-dev \
+  libdrm-dev \
   libeigen3-dev \
   libfreetype-dev \
+  libcwiid1 \
+  libcwiid-dev \
+  libfmt-dev \
+  libgtk-3-dev \
+  libglfw3-dev \
+  libgl1-mesa-dev \
+  libglu1-mesa-dev \
   liblog4cxx-dev \
+  liblttng-ust-dev \
   libopencv-dev \
+  libpcap-dev \
+  libpcl-dev \
+  librange-v3-dev \
   libresource-retriever-dev \
   libsdl2-dev \
+  libspnav-dev \
+  libssl-dev \
   libtinyxml2-dev \
+  libusb-1.0-0-dev \
   libxaw7-dev \
   libxcursor-dev \
   libxrandr-dev \
-	lsb-release \
+  libyaml-cpp-dev \
   mingw-w64-i686-dev \
+  ninja-build \
   pciutils \
+  pkg-config \
   pyqt5-dev \
+  python3-argcomplete \
   python3-flake8 \
-  python3-lark \
   python3-netifaces \
   python3-numpy \
-	python3-pip \
-	python3-pydot \
-  python3-pyqt5 \
+  python3-pip \
+  python3-rosdep2 \
+  python3-setuptools \
+  python3-sip \
+  python3-pydot \
   python3-pyqt5.qtsvg \
   python3-pytest-cov \
-  python3-rosdep2 \
-	python3-setuptools \
-	python3-sip \
-	qtbase5-dev \
-	sip-dev \
+  python3-jinja2 \
+  python3-lark \
+  python3-pyqt5 \
+  qtbase5-dev \
+  sip-dev \
   xterm \
-	wget \
-  zip
+  wget \
+  zip && \
+  rm -rf /var/lib/apt/lists/*
 
-RUN pip install --upgrade pip
-
-RUN pip install \
+RUN pip install --break-system-packages \
   colcon-common-extensions \
 	flake8-blind-except \
 	flake8-builtins \
@@ -82,55 +108,9 @@ RUN pip install \
 	setuptools \
   vcstool
 
-
-# additional packages
-RUN apt update && \
-    apt install -y \
-    libatlas-base-dev \
-    libbluetooth-dev \
-    libboost-dev \
-    libboost-program-options-dev \
-    libboost-python-dev \
-    ninja-build \
-    libcurlpp-dev \
-    libcwiid1 \
-    libcwiid-dev \
-    libdrm-dev \
-    libspnav-dev \
-    libusb-1.0-0-dev \
-    libyaml-cpp-dev \
-    ntpdate \
-    python3-netifaces \
-    python3-psutil
-
-# RUN pip install \
-#     meson \
-#     jinja2 \
-#     ply \
-#     pyyaml
-
-# # Install libcamera (source build)
-# RUN git clone https://git.libcamera.org/libcamera/libcamera.git && \
-#     cd libcamera && \
-#     meson build && \
-#     ninja -C build install && \
-#     cd .. && \
-#     rm -rf libcamera
-
-
-# Downloading ros-humble and unzip
-
 WORKDIR /ros2_ws
-RUN wget -qO - https://s3.ap-northeast-1.wasabisys.com/rpi-raspbian-ros2/default.gpg | apt-key add - && \
-    echo "deb https://s3.ap-northeast-1.wasabisys.com/rpi-raspbian-ros2 bullseye humble" | tee /etc/apt/sources.list.d/ros2-bullseye.list && \
-    apt update && \
-    apt install ros-humble-desktop
-    
-
-# install additional packages
-RUN apt update && \
-  apt install -y \
-  libpcl-dev
+RUN wget -O /tmp/ros.deb ${URL}
+RUN apt install -y /tmp/ros.deb
 
 RUN ldconfig
 RUN mkdir -p /ros2_ws/src
