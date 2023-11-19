@@ -1,7 +1,4 @@
 #!/bin/bash
-ROS2_WS=$1
-OPERATE_BASH=$2
-
 check_and_exit() {
     if [ $? -ne 0 ]; then
         echo "failed"
@@ -9,18 +6,13 @@ check_and_exit() {
     fi
 }
 
-
-ROS2_WS=`realpath ${ROS2_WS}`/
-check_and_exit
-
+SCRIPT_DIR=$(cd $(dirname $0); pwd)
+ROS2_WS=${1:-${SCRIPT_DIR}/ros2_ws}
+OPERATE_BASH=${2:-${SCRIPT_DIR}/scripts/build_command.bash}
 DOCKER_NAME="rpi4-ros2"
 
-DEB_ROOT=${ROS2_WS}/deb/
-
-SCRIPT_DIR=$(
-    cd $(dirname $0)
-    pwd
-)
+EXTRACTED_DPKG_DIR=${3:-${SCRIPT_DIR}/extracted_dpkg}
+check_and_exit
 
 if [ -z ${ROS2_WS} ]; then
     # ROS2_WS=${SCRIPT_DIR}/mnt
@@ -29,7 +21,6 @@ if [ -z ${ROS2_WS} ]; then
     echo "Usage:"
     echo "- xcompile_rpi_ros2 [ROS2_WS] [OPERATE_BASH (optional)]"
     echo ""
-    
     exit 1
 fi
 
@@ -37,15 +28,6 @@ sudo echo "permission check..."
 check_and_exit
 echo "OK!"
 
-
-cd $SCRIPT_DIR
-
-if [ -z ${OPERATE_BASH} ]; then
-    OPERATE_BASH=${SCRIPT_DIR}/scripts/build_command.bash
-fi
-
-
-# is this directory?
 if [ ! -d ${ROS2_WS} ]; then
     echo "ROS2_WS is not a directory."
     echo "Please create a valid ROS2 workspace."
@@ -54,6 +36,7 @@ if [ ! -d ${ROS2_WS} ]; then
     echo ""
     exit 1
 fi
+
 mkdir -p ${ROS2_WS}
 ROS2_WS=$(cd ${ROS2_WS}; pwd)
 OPERATE_BASH=$(cd $(dirname ${OPERATE_BASH}); pwd)/$(basename ${OPERATE_BASH})
@@ -61,6 +44,7 @@ OPERATE_BASH=$(cd $(dirname ${OPERATE_BASH}); pwd)/$(basename ${OPERATE_BASH})
 echo ""
 echo "========== Build summary =========="
 echo "ROS2_WS: ${ROS2_WS}"
+echo "Mount directory: ${EXTRACTED_DPKG_DIR}"
 echo "run bash: ${OPERATE_BASH}"
 echo "==================================="
 sleep 3
@@ -87,6 +71,7 @@ fi
 # setup qemu (if this computer arch is x86_64)
 if [ "$(uname -m)" == "x86_64" ]; then
     docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
+    check_and_exit
 fi
 
 # build docker and run
@@ -94,16 +79,12 @@ docker build -t ${DOCKER_NAME} ${SCRIPT_DIR}/.
 check_and_exit
 
 BASH_SCRIPT_CONTENT=$(cat ${OPERATE_BASH})
-docker run -it --rm --init --privileged --network=host -v ${ROS2_WS}:/ros2_ws ${DOCKER_NAME} /bin/bash -c "${BASH_SCRIPT_CONTENT}"
+docker run -it --rm --init --privileged \
+    --network=host \
+    -v ${ROS2_WS}:/ros2_ws \
+    -v ${EXTRACTED_DPKG_DIR}/usr/local:/usr/local \
+    ${DOCKER_NAME} /bin/bash -c "${BASH_SCRIPT_CONTENT}"
 check_and_exit
-
-# create deb package
-
-
-if [ $? -ne 0 ]; then
-    echo "docker run failed"
-    exit 1
-fi
 
 sudo chown -R ${USER}:${USER} ${ROS2_WS}
 unset SCRIPT_DIR

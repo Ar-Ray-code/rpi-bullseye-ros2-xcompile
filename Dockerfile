@@ -1,10 +1,7 @@
 ARG DEBIAN_DISTRO=bookworm
 FROM arm64v8/debian:${DEBIAN_DISTRO}
 
-ARG DISTRO=iron
 ARG URL="https://s3.ap-northeast-1.wasabisys.com/download-raw/dpkg/ros2-desktop/debian/bookworm/ros-iron-desktop-0.3.2_20231028_arm64.deb"
-ARG DATE=20221215
-ARG ARCH=arm64
 
 ENV TZ=Asia/Tokyo
 RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
@@ -69,6 +66,7 @@ RUN apt-get update && \
   pyqt5-dev \
   python3-argcomplete \
   python3-flake8 \
+  python3-dev \
   python3-netifaces \
   python3-numpy \
   python3-pip \
@@ -108,7 +106,6 @@ RUN pip install --break-system-packages \
 	setuptools \
   vcstool
 
-WORKDIR /ros2_ws
 RUN wget -O /tmp/ros.deb ${URL}
 RUN apt install -y /tmp/ros.deb
 
