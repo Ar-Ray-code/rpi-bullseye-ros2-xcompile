@@ -1,2 +1,4 @@
 *ws*
 *.tar
+dpkg/
+user_*
